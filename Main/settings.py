@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-y)n-4z2g(1clf-%09umx)@&#psdnidvks%8-3a_z)e6obpa*-n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.vercel.app', '.now.sh']
+
 
 
 # Application definition
@@ -137,3 +138,10 @@ cloudinary.config(
 LOGIN_URL="/login_view";
 LOGIN_REDIRECT_URL="/Home_Page"
 LOGOUT_REDIRECT_URL="/Home_Page/"
+
+
+
+
+STATICFILES_DIRS = os.path.join(BASE_DIR, 'static')
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
