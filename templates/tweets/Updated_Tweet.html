@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Tweet | Social Network</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .page-title {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+        .back-btn-container {
+            max-width: 600px;
+            margin: 20px auto 0;
+        }
+        .current-image {
+            max-height: 200px;
+            width: auto;
+            object-fit: contain;
+        }
+        .image-preview {
+            max-height: 200px;
+            display: none;
+        }
+        .remove-image-btn {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'Navbar/navbar.html' %}   
+    
+    <div class="container mt-3">
+        <div class="back-btn-container">
+            <a href="{% url 'Home_Page' %}" class="btn btn-danger">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+    
+    <div class="container mt-3">
+        <div class="form-container">
+            <form id="tweetForm" action="{% url 'Tweet_Updated' UpdatedTweet.id %}" method="POST" enctype="multipart/form-data" class="border p-4 rounded-3 bg-light shadow-sm">
+                <h3 class="mb-4 page-title">Edit Tweet</h3>
+                
+                {% csrf_token %}
+                
+                <!-- Text Field -->
+                <div class="mb-3">
+                    <label for="tweetText" class="form-label fw-semibold">Share your thoughts</label>
+                    <textarea class="form-control" id="tweetText" name="Person_text" rows="4" 
+                              maxlength="500" placeholder="What's happening today? Share with your friends..." required>{{UpdatedTweet.text}}</textarea>
+                    <div class="form-text">
+                        <span id="charCount"></span> characters remaining
+                    </div>
+                </div>
+                
+                <!-- Current Image Display -->
+                {% if UpdatedTweet.photo %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Current Image</label>
+                    <div class="current-image-container mb-3">
+                        <img src="{{ UpdatedTweet.photo.url }}" class="current-image img-thumbnail" alt="Current tweet image" id="currentImage">
+                    </div>
+                    
+                    <!-- Image Change Options -->
+                    <div class="mb-3">
+                        <label for="tweetImage" class="form-label fw-semibold">Change Image</label>
+                        <input type="file" class="form-control" id="tweetImage" name="Person_photo" accept="image/*">
+                        <div class="form-text">Leave blank to keep current image</div>
+                    </div>
+                    
+                    <!-- New Image Preview -->
+                    <div class="mb-3" id="imagePreviewContainer" style="display: none;">
+                        <p class="small text-muted mb-2">New Image Preview:</p>
+                        <img id="imagePreview" src="#" alt="Preview" class="img-thumbnail image-preview">
+                        <button type="button" class="btn btn-sm btn-danger mt-2" id="removeImageBtn">
+                            <i class="bi bi-trash"></i> Remove New Image
+                        </button>
+                    </div>
+                    
+                   
+                {% else %}
+                    <!-- No Image - Add Image Option -->
+                    <div class="mb-3">
+                        <label for="tweetImage" class="form-label fw-semibold">Add Image</label>
+                        <input type="file" class="form-control" id="tweetImage" name="Person_photo" accept="image/*">
+                    </div>
+                {% endif %}
+                
+                <div class="d-grid gap-2 mt-3">  <!-- mt-5 is approximately 3rem which may be close to 10% of container -->
+                    <button type="submit" class="btn btn-primary p-2 btn-lg">
+                        <i class="bi bi-save"></i> Update Tweet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Character counter
+        const tweetText = document.getElementById('tweetText');
+        const charCount = document.getElementById('charCount');
+        
+        // Initialize character count
+        function updateCharCount() {
+            const remaining = 500 - tweetText.value.length;
+            charCount.textContent = remaining;
+            charCount.className = remaining < 0 ? 'text-danger fw-bold' : 'text-muted';
+            if (remaining < 0) {
+                tweetText.classList.add('is-invalid');
+            } else {
+                tweetText.classList.remove('is-invalid');
+            }
+        }
+        
+        // Set initial count
+        updateCharCount();
+        
+        // Update on input
+        tweetText.addEventListener('input', updateCharCount);
+
+        // Image Preview Functionality
+        const tweetImage = document.getElementById('tweetImage');
+        const imagePreview = document.getElementById('imagePreview');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const removeCurrentImageBtn = document.getElementById('removeCurrentImageBtn');
+        const removeImageFlag = document.getElementById('removeImageFlag');
+        const currentImage = document.getElementById('currentImage');
+
+        if (tweetImage) {
+            tweetImage.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    if (!file.type.match('image.*')) {
+                        alert('Please select an image file (JPG, PNG, GIF)');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    if (file.size > 5 * 1024 * 1024) {  // 5MB limit
+                        alert('Image size should be less than 5MB');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                        imagePreviewContainer.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        if (removeImageBtn) {
+            removeImageBtn.addEventListener('click', function() {
+                tweetImage.value = '';
+                imagePreview.src = '#';
+                imagePreview.style.display = 'none';
+                imagePreviewContainer.style.display = 'none';
+            });
+        }
+
+        if (removeCurrentImageBtn) {
+            removeCurrentImageBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to remove this image?')) {
+                    // Toggle between remove/keep states
+                    if (removeImageFlag.value === 'false') {
+                        removeImageFlag.value = 'true';
+                        this.classList.remove('btn-outline-danger');
+                        this.classList.add('btn-danger');
+                        this.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Keep Current Image';
+                    } else {
+                        removeImageFlag.value = 'false';
+                        this.classList.remove('btn-danger');
+                        this.classList.add('btn-outline-danger');
+                        this.innerHTML = '<i class="bi bi-trash"></i> Remove Current Image';
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
