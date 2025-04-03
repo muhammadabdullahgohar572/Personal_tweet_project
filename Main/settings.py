@@ -132,3 +132,8 @@ cloudinary.config(
     api_key="218579688698535",
     api_secret="oWdXLf-pmabEcGSN-zrIrkvEhMo"
 )
+
+
+LOGIN_URL="/login_view";
+LOGIN_REDIRECT_URL="/Home_Page"
+LOGOUT_REDIRECT_URL="/Home_Page/"
