@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-y)n-4z2g(1clf-%09umx)@&#psdnidvks%8-3a_z)e6obpa*-n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.vercel.app', '.now.sh']
+ALLOWED_HOSTS = ['*']
 
 
 
@@ -141,7 +141,13 @@ LOGOUT_REDIRECT_URL="/Home_Page/"
 
 
 
-
-STATICFILES_DIRS = os.path.join(BASE_DIR, 'static')
-
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
+
+# For Vercel (temporary database solution)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
